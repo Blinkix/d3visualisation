@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<head>
+    <title>L'Occitanie</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+
+</head>
+
+<style>
+    path {
+        fill: red;
+        stroke: rgb(255, 0, 0);
+        stroke-width: .01px;
+    }
+
+    circle {
+        fill: blue;
+        fill-opacity: 0.8;
+        stroke: white;
+    }
+
+        circle.active {
+            fill-opacity: 1;
+        }
+
+    #option {
+        position: fixed;
+        padding-left: 10px;
+        padding-top: 10px;
+    }
+
+ 
+
+    div.tooltip {
+        position: absolute;
+        text-align: center;
+        width: auto;
+        height: auto;
+        padding: 2px;
+        font: 12px sans-serif;
+        background: orange;
+        border: 0px;
+        border-radius: 8px;
+        pointer-events: none;
+    }
+</style>
+
+<body>
+
+    <h2>Nombre d'habitants par commune</h2>
+ 
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.25.6/d3-legend.min.js"></script>
+    <div id="map">
+        <script>
+         
+            var global={};
+
+                var width = $(window).width(),
+                    height = $(window).height();
+
+                var svg = d3.select("body").append("svg")
+                    .attr("width", width)
+                    .attr("height", height);
+
+                var div = d3.select("body").append("div")
+                    .attr("class", "tooltip")
+                    .style("opacity", 0);
+
+                var nodes = d3.range(1).map(function (d, i) {
+                    return {
+                        radius: 0
+                    }
+                });
+               
+                global.scale = 10000;
+
+                var url = "data.geojson";
+                d3.json(url, function (error, flux_deplacement_par_commune) {
+                    var center = d3.geoCentroid(flux_deplacement_par_commune)
+                    //var scale = 10000;
+                    var offset = [width / 2, height / 2];
+                    var projection = d3.geoMercator().scale(global.scale).center(center).translate(offset);
+
+                    var path = d3.geoPath()
+                        .projection(projection)
+
+                    svg.selectAll("path")
+                        .data(flux_deplacement_par_commune.features)
+                        .enter().append("path")
+                        .attr("d", path)
+                        .exit();
+
+
+
+                    for (let d of flux_deplacement_par_commune.features) {
+                        var x_com = projection([d.properties["lat-commune"], d.properties["long-commune"]]);
+                        var size = 25 - (1 - d.properties["population_2014"] / 466297) * 25 + 1;
+                       
+                            nodes.push({
+                                "radius": size,
+                                "x": x_com[0],
+                                "y": x_com[1],
+                                "commune": d.properties["commune"],
+                                "commuters_2009": d.properties["population_2014"]
+                            });
+                        
+                    }
+
+
+                    global.simulation = d3.forceSimulation(nodes)
+                       .force('x', d3.forceX().x(function (d) {
+                           return d.x;
+                       }))
+                       .force('y', d3.forceY().y(function (d) {
+                           return d.y;
+                       }))
+                       .force('collision', d3.forceCollide().iterations(2).radius(function (d) {
+                           return d.radius;
+                       }))
+                       .on('tick', ticked);
+
+
+                var u = d3.select('svg')
+                    .selectAll('circle')
+                    .data(nodes);
+                function ticked() {
+                    //console.log(nodes)
+                    u = d3.select('svg')
+                        .selectAll('circle')
+                        .data(nodes)
+                    u.enter()
+                        .append('circle')
+                        //.attr('class', "node") /*/*/
+                        .attr('r', function (d) {
+                            return d.radius;
+                        })
+                        .on("mouseover", function (d) {
+                            div.transition()
+                                .duration(200)
+                                .style("opacity", .9);
+                            div.html("Commune de r&eacutesidence :" + d.commune + "<br/>" + "Nombre de personnes :" + d.commuters_2009)
+                                .style("left", (d3.event.pageX) + "px")
+                                .style("top", (d3.event.pageY - 28) + "px");
+                            d3.select(this)
+                                .classed("active", true)
+                        })
+                        .on("mouseout", function (d) {
+                            d3.select(this)
+                                .classed("active", false);
+                            div.transition()
+                                .duration(500)
+                                .style("opacity", 0);
+                        })
+                        .merge(u)
+                        .attr('cx', function (d) {
+
+                            return d.x;
+                        })
+                        .attr('cy', function (d) {
+                            return d.y;
+                        })
+                    u.exit().remove();
+
+                }
+                });
+
+
+
+
+
+            
+
+
+
+        </script>
+    </div>
+</body>
+</html>

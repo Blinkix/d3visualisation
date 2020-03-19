@@ -1,0 +1,5 @@
+image: node:6-slim
+unittest:
+  stage: test
+  script:
+  - npm install

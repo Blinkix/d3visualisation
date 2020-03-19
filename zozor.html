@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>World Map</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  <script src="https://d3js.org/topojson.v2.min.js"></script>
+  <style>
+    path {
+      fill: lightgray;
+      fill-opacity: 0.2;
+      stroke: #000;
+      stroke-width: 0.5px;
+    }
+
+    .graticule {
+      fill: none;
+      stroke: #ccc;
+      stroke-width: .5px;
+    }
+
+    .foreground {
+      fill: none;
+      stroke: #333;
+      stroke-width: 1px;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="pop" style="width: 1900px; height: 1000px;"></div>
+
+  <script>
+
+      var newMap = L.map('pop').setView([43.480000,1.360000], 1);
+      L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', { minZoom:1, maxZoom:13,
+      attribution: '&copy; <a href=”http://osm.org/copyright”>OpenStreetMap</a> contributors'
+      }).addTo(newMap);
+
+
+      d3.json("data.geojson",function(data){
+
+      var datalayer = L.geoJson(data ,{
+      onEachFeature: function(feature, featureLayer) {
+        var prop= feature.properties
+        var txtpopup = "<strong><u>Commune</u>:</strong>&nbsp;  "+ prop.commune + " <br> "
+         + "<strong><u>Département </u>:</strong>&nbsp;"+prop.nom_dept + " ("+prop.code_dept+")<br>" +
+         "<strong><u>Nombre d'habitant</u>:</strong>&nbsp;" + prop.population_2014; 
+      featureLayer.bindPopup(txtpopup);
+      }
+      }).addTo(newMap);
+      newMap.fitBounds(datalayer.getBounds());
+      });
+
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,25 @@
+{
+  "name": "c3po",
+  "version": "1.0.0",
+  "description": "how use D3.js",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://gitlab.com/Dydy_Baba/d3visualisation.git"
+  },
+  "author": "moi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://gitlab.com/Dydy_Baba/d3visualisation/issues"
+  },
+  "homepage": "https://gitlab.com/Dydy_Baba/d3visualisation#readme",
+  "dependencies": {
+    "d3.js": "0.0.2-security",
+    "express": "^4.17.1",
+    "fs": "0.0.1-security"
+  }
+}
